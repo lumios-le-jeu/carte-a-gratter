@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Carte à Gratter</title>
+    <style>
+        body { text-align: center; }
+        #backgroundCanvas, #scratchCanvas {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+    </style>
+</head>
+<body>
+
+<h2>Carte à Gratter</h2>
+<!-- Canvas pour l'image de fond -->
+<canvas id="backgroundCanvas" width="800" height="600"></canvas>
+<!-- Canvas pour l'image de grattage -->
+<canvas id="scratchCanvas" width="800" height="600"></canvas>
+
+<script>
+    const backgroundCanvas = document.getElementById('backgroundCanvas');
+    const scratchCanvas = document.getElementById('scratchCanvas');
+    const bgCtx = backgroundCanvas.getContext('2d');
+    const scratchCtx = scratchCanvas.getContext('2d');
+    const SCRATCH_RADIUS = 20;
+
+    // Chargement des images
+    const foregroundImg = new Image();
+    const backgroundImg = new Image();
+
+    foregroundImg.src = 'https://drive.google.com/uc?export=view&id=1-3kfXjBvW_mbHhs0CuN2BMtLRnuFYS4P'; // lien direct pour "gratte"
+    backgroundImg.src = 'https://drive.google.com/uc?export=view&id=1Mi-2-t2XmwKFQl-pzl8M9Rpg0HEFHkoq'; // lien direct pour "bon"
+
+    // Dessiner l'image de fond sur le backgroundCanvas
+    backgroundImg.onload = () => {
+        bgCtx.drawImage(backgroundImg, 0, 0, backgroundCanvas.width, backgroundCanvas.height);
+    };
+
+    // Dessiner l'image de premier plan sur le scratchCanvas comme masque
+    foregroundImg.onload = () => {
+        scratchCtx.drawImage(foregroundImg, 0, 0, scratchCanvas.width, scratchCanvas.height);
+        scratchCtx.globalCompositeOperation = 'destination-out';
+    };
+
+    // Fonction de grattage
+    function scratch(event) {
+        const rect = scratchCanvas.getBoundingClientRect();
+        const x = event.clientX - rect.left;
+        const y = event.clientY - rect.top;
+
+        scratchCtx.beginPath();
+        scratchCtx.arc(x, y, SCRATCH_RADIUS, 0, 2 * Math.PI);
+        scratchCtx.fill();
+    }
+
+    // Ajout des événements pour gratter
+    scratchCanvas.addEventListener('mousedown', (e) => {
+        scratchCanvas.addEventListener('mousemove', scratch);
+        scratch(e);
+    });
+
+    scratchCanvas.addEventListener('mouseup', () => {
+        scratchCanvas.removeEventListener('mousemove', scratch);
+    });
+</script>
+
+</body>
+</html>
