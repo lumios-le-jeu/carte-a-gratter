@@ -26,7 +26,7 @@
     const scratchCanvas = document.getElementById('scratchCanvas');
     const bgCtx = backgroundCanvas.getContext('2d');
     const scratchCtx = scratchCanvas.getContext('2d');
-    const SCRATCH_RADIUS = 20;
+    const SCRATCH_RADIUS = 40;  // Taille du cercle de grattage doublée
 
     // Utilisation des chemins relatifs pour les images stockées dans le dépôt
     const foregroundImg = new Image();
@@ -46,7 +46,7 @@
         scratchCtx.globalCompositeOperation = 'destination-out';
     };
 
-    // Fonction de grattage
+    // Fonction de grattage avec suivi du mouvement
     function scratch(event) {
         const rect = scratchCanvas.getBoundingClientRect();
         const x = event.clientX - rect.left;
@@ -57,15 +57,38 @@
         scratchCtx.fill();
     }
 
-    // Ajout des événements pour gratter
+    // Détection du mouvement continu pour suivre le tracé du doigt ou de la souris
     scratchCanvas.addEventListener('mousedown', (e) => {
         scratchCanvas.addEventListener('mousemove', scratch);
-        scratch(e);
+        scratch(e); // Gratte au point initial
     });
 
     scratchCanvas.addEventListener('mouseup', () => {
         scratchCanvas.removeEventListener('mousemove', scratch);
     });
+
+    // Prise en charge du tactile pour mobile
+    scratchCanvas.addEventListener('touchstart', (e) => {
+        scratchCanvas.addEventListener('touchmove', touchScratch);
+        touchScratch(e); // Gratte au point initial
+    });
+
+    scratchCanvas.addEventListener('touchend', () => {
+        scratchCanvas.removeEventListener('touchmove', touchScratch);
+    });
+
+    // Fonction de grattage pour les appareils tactiles
+    function touchScratch(event) {
+        const rect = scratchCanvas.getBoundingClientRect();
+        const touch = event.touches[0];
+        const x = touch.clientX - rect.left;
+        const y = touch.clientY - rect.top;
+
+        scratchCtx.beginPath();
+        scratchCtx.arc(x, y, SCRATCH_RADIUS, 0, 2 * Math.PI);
+        scratchCtx.fill();
+        event.preventDefault(); // Empêche le défilement pendant le grattage
+    }
 </script>
 
 </body>
