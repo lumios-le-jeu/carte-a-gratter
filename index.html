@@ -47,11 +47,7 @@
     };
 
     // Fonction de grattage avec suivi du mouvement
-    function scratch(event) {
-        const rect = scratchCanvas.getBoundingClientRect();
-        const x = event.clientX - rect.left;
-        const y = event.clientY - rect.top;
-
+    function scratch(x, y) {
         scratchCtx.beginPath();
         scratchCtx.arc(x, y, SCRATCH_RADIUS, 0, 2 * Math.PI);
         scratchCtx.fill();
@@ -59,35 +55,36 @@
 
     // Détection du mouvement continu pour suivre le tracé du doigt ou de la souris
     scratchCanvas.addEventListener('mousedown', (e) => {
-        scratchCanvas.addEventListener('mousemove', scratch);
-        scratch(e); // Gratte au point initial
+        scratchCanvas.addEventListener('mousemove', onMouseMove);
+        scratch(e.clientX - scratchCanvas.getBoundingClientRect().left, e.clientY - scratchCanvas.getBoundingClientRect().top); // Gratte au point initial
     });
 
     scratchCanvas.addEventListener('mouseup', () => {
-        scratchCanvas.removeEventListener('mousemove', scratch);
+        scratchCanvas.removeEventListener('mousemove', onMouseMove);
     });
+
+    function onMouseMove(e) {
+        const rect = scratchCanvas.getBoundingClientRect();
+        scratch(e.clientX - rect.left, e.clientY - rect.top);
+    }
 
     // Prise en charge du tactile pour mobile
     scratchCanvas.addEventListener('touchstart', (e) => {
-        scratchCanvas.addEventListener('touchmove', touchScratch);
-        touchScratch(e); // Gratte au point initial
+        scratchCanvas.addEventListener('touchmove', onTouchMove);
+        const touch = e.touches[0];
+        scratch(touch.clientX - scratchCanvas.getBoundingClientRect().left, touch.clientY - scratchCanvas.getBoundingClientRect().top); // Gratte au point initial
+        e.preventDefault(); // Empêche le défilement pendant le grattage
     });
 
     scratchCanvas.addEventListener('touchend', () => {
-        scratchCanvas.removeEventListener('touchmove', touchScratch);
+        scratchCanvas.removeEventListener('touchmove', onTouchMove);
     });
 
-    // Fonction de grattage pour les appareils tactiles
-    function touchScratch(event) {
+    function onTouchMove(e) {
         const rect = scratchCanvas.getBoundingClientRect();
-        const touch = event.touches[0];
-        const x = touch.clientX - rect.left;
-        const y = touch.clientY - rect.top;
-
-        scratchCtx.beginPath();
-        scratchCtx.arc(x, y, SCRATCH_RADIUS, 0, 2 * Math.PI);
-        scratchCtx.fill();
-        event.preventDefault(); // Empêche le défilement pendant le grattage
+        const touch = e.touches[0];
+        scratch(touch.clientX - rect.left, touch.clientY - rect.top);
+        e.preventDefault(); // Empêche le défilement pendant le grattage
     }
 </script>
 
